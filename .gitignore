@@ -1,0 +1,18 @@
+node_modules/
+dist/
+*.log
+.env
+.env.*
+!.env.example
+
+# clarify runtime state (per-project, not committed)
+.clarify/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
