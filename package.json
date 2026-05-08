@@ -1,6 +1,6 @@
 {
   "name": "clarify",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Specification-first AI coding workflow as a Claude Code plugin.",
   "type": "module",
   "license": "MIT",
@@ -11,7 +11,9 @@
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
     "yaml": "^2.5.0",

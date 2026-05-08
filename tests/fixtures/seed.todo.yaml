@@ -1,0 +1,52 @@
+version: 1
+id: seed-2026-05-08-todo-app
+created_at: 2026-05-08T10:30:00Z
+backend: claude
+
+description: |
+  A small, single-user todo CLI. Persists to a local JSON file.
+  Supports add, list, complete, remove. No network, no auth.
+
+constraints:
+  language: typescript
+  runtime: node>=20
+  packaging: single npm package
+  forbidden_paths:
+    - node_modules/**
+    - dist/**
+  allowed_globals:
+    - process.env
+
+acceptance_criteria:
+  - id: AC-1
+    title: CLI supports add/list/complete/remove subcommands
+    intent: User can run subcommands and see expected output.
+    allowed_paths: ['src/cli/**', 'src/commands/**']
+    children:
+      - id: AC-1.1
+        title: '`todo add "<text>"` appends an item with a unique id'
+        allowed_paths: ['src/commands/add.ts']
+      - id: AC-1.2
+        title: '`todo list` prints items numbered, with [x] for completed'
+        allowed_paths: ['src/commands/list.ts']
+
+  - id: AC-2
+    title: Persistence to ~/.todo/items.json
+    intent: All mutations atomically write to the JSON file.
+    allowed_paths: ['src/store/**']
+
+mechanical_checks:
+  - name: lint
+    cmd: npm run lint
+
+thresholds:
+  ambiguity_max: 0.2
+  consensus_min: 0.8
+  drift_warn: 0.3
+  drift_fail: 0.7
+  max_evolutions: 3
+
+lineage:
+  source: interview
+  interview_transcript: null
+  parent_seed: null

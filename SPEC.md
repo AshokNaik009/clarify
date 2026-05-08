@@ -190,11 +190,8 @@ acceptance_criteria:
 
 # Mechanical checks — the DETERMINISTIC stage of evaluation.
 # Plugin runs each command via execSync; non-zero exit = fail.
+# Default to lint-only; add more checks (typecheck, tests) only when the user opts in.
 mechanical_checks:
-  - name: typecheck
-    cmd: npm run typecheck
-  - name: tests
-    cmd: npm test
   - name: lint
     cmd: npm run lint
 

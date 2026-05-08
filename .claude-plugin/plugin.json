@@ -1,0 +1,16 @@
+{
+  "name": "clarify",
+  "version": "0.1.0",
+  "description": "Specification-first AI coding workflow as a Claude Code plugin.",
+  "author": "Ashok Naik",
+  "license": "MIT",
+  "skills": [
+    "skills/interview",
+    "skills/run",
+    "skills/evaluate",
+    "skills/evolve",
+    "skills/status",
+    "skills/help"
+  ],
+  "requires": { "node": ">=20" }
+}
