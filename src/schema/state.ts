@@ -102,6 +102,94 @@ export const EvolutionRefSchema = z
   })
   .strict();
 
+export const RalphIterationActionSchema = z.enum([
+  'evaluated',
+  'fixed_implementation',
+  'rewrote_seed',
+  'no_progress',
+  'iteration_timeout',
+]);
+export type RalphIterationAction = z.infer<typeof RalphIterationActionSchema>;
+
+export const RalphIterationSchema = z
+  .object({
+    n: z.number().int().nonnegative(),
+    action: RalphIterationActionSchema,
+    duration_ms: z.number().int().nonnegative(),
+    ac_progress: z
+      .object({
+        passed: z.number().int().nonnegative(),
+        failed: z.number().int().nonnegative(),
+        pending: z.number().int().nonnegative(),
+      })
+      .strict(),
+    failed_ac_ids: z.array(z.string()).default([]),
+    notes: z.string().default(''),
+    recorded_at: z.string().datetime({ offset: true }),
+  })
+  .strict();
+export type RalphIteration = z.infer<typeof RalphIterationSchema>;
+
+export const RalphConfigSchema = z
+  .object({
+    max_iterations: z.number().int().min(1).max(50).default(10),
+    per_iteration_timeout_ms: z.number().int().min(60_000).default(30 * 60_000),
+    total_timeout_ms: z.number().int().min(60_000).default(2 * 60 * 60_000),
+    stuck_threshold: z.number().int().min(1).default(3),
+    auto_unstuck: z.boolean().default(true),
+  })
+  .strict();
+export type RalphConfig = z.infer<typeof RalphConfigSchema>;
+
+export const RalphStatusSchema = z.enum([
+  'running',
+  'converged',
+  'exhausted',
+  'stagnated',
+  'stagnated_pending_unstuck',
+  'stagnated_after_unstuck',
+  'iteration_timeout',
+  'total_timeout',
+  'failed',
+  'interrupted',
+]);
+export type RalphStatus = z.infer<typeof RalphStatusSchema>;
+
+export const RalphSchema = z
+  .object({
+    started_at: z.string().datetime({ offset: true }),
+    status: RalphStatusSchema.default('running'),
+    stop_reason: z.string().default(''),
+    iterations: z.array(RalphIterationSchema).default([]),
+    config: RalphConfigSchema,
+  })
+  .strict();
+export type Ralph = z.infer<typeof RalphSchema>;
+
+export const PersonaNameSchema = z.enum([
+  'contrarian',
+  'hacker',
+  'simplifier',
+  'researcher',
+  'architect',
+]);
+export type PersonaName = z.infer<typeof PersonaNameSchema>;
+
+export const UnstuckTriggerSchema = z.enum(['manual', 'ralph_stagnated']);
+export type UnstuckTrigger = z.infer<typeof UnstuckTriggerSchema>;
+
+export const UnstuckEntrySchema = z
+  .object({
+    persona: PersonaNameSchema,
+    trigger: UnstuckTriggerSchema,
+    context: z.string().default(''),
+    suggestion: z.string().default(''),
+    applied: z.boolean().default(false),
+    recorded_at: z.string().datetime({ offset: true }),
+  })
+  .strict();
+export type UnstuckEntry = z.infer<typeof UnstuckEntrySchema>;
+
 export const StateSchema = z
   .object({
     schema_version: z.literal(1),
@@ -132,6 +220,8 @@ export const StateSchema = z
       findings: [],
     }),
     evolutions: z.array(EvolutionRefSchema).default([]),
+    ralph: RalphSchema.optional(),
+    unstuck: z.array(UnstuckEntrySchema).default([]),
   })
   .strict();
 

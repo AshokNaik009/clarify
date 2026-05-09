@@ -1,0 +1,35 @@
+version: 1
+id: seed-2026-05-08-ralph-failing
+created_at: 2026-05-08T12:00:00Z
+backend: claude
+
+description: |
+  Single-AC fixture for Ralph stagnation tests. The lone mechanical check always
+  fails (`false` exits 1), so this seed cannot converge; it is used to exercise
+  the no_progress → stagnation → unstuck → stagnated_after_unstuck path.
+
+constraints:
+  language: typescript
+  runtime: node>=20
+
+acceptance_criteria:
+  - id: AC-1
+    title: Always-failing AC for stagnation tests
+    intent: Drive Ralph into stagnation; never expected to pass.
+    allowed_paths: ['src/**']
+
+mechanical_checks:
+  - name: always-fails
+    cmd: 'false'
+
+thresholds:
+  ambiguity_max: 0.2
+  consensus_min: 0.8
+  drift_warn: 0.3
+  drift_fail: 0.7
+  max_evolutions: 3
+
+lineage:
+  source: manual
+  interview_transcript: null
+  parent_seed: null

@@ -56,3 +56,13 @@ Two signals:
 - **intent** (`--deep` only) — `claude -p` semantically scores how far the diff has wandered from the seed.
 
 Verdict thresholds: `aligned` < `drift_warn` ≤ `drifting` < `drift_fail` ≤ `diverged`.
+
+## Ralph: meta-orchestrator over evaluate + evolve
+
+`clarify ralph` does not invent new evaluation or evolution logic. It chains the existing `eval-*` and `evolve-*` scripts inside a bounded loop and writes per-iteration outcomes to `state.ralph`. The loop terminates on the first of: all root ACs `passed` (`converged`), an iteration timing out (`iteration_timeout`), wall-clock total cap (`total_timeout`), iteration cap (`exhausted`), `N` consecutive `no_progress` iterations (`stagnated_*`), an inner script returning non-zero (`failed`), or Ctrl-C (`interrupted`).
+
+Stagnation handling deliberately includes one escalation step: when the loop would otherwise terminate as `stagnated` AND `auto_unstuck` is on AND no prior unstuck attempt exists, Ralph runs `clarify unstuck` once with `--trigger ralph_stagnated`, applies the persona's reframing in-session, and gives the loop one final attempt. If that final attempt also makes no progress, Ralph terminates as `stagnated_after_unstuck` — a hard signal that human attention is needed.
+
+## Unstuck: escalation hatch
+
+`clarify unstuck` is the one-shot lateral-thinking step. Five personas live in `src/personas/{contrarian,hacker,simplifier,researcher,architect}.md`. The unstuck skill reads the persona prompt, applies that lens to the most recent failed AC, and surfaces a concrete next step (edit the seed, drop the AC, change `allowed_paths`, apply a workaround). The active session does the reasoning; `scripts/unstuck-record.ts` only persists the persona invocation and the suggestion to `state.unstuck[]`. There is no MCP tool, no separate model call, no async dispatch — the persona prompts are the surface area.

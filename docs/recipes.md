@@ -41,6 +41,31 @@ Edit one AC's implementation to deliberately break a test. Expected:
   - tells you the suggested fix and asks you to apply it, or
   - applies it itself if the skill is configured to do so.
 
+## Recipe 5 — Ralph until convergence
+
+For an unattended run where you want clarify to keep trying without manual intervention:
+
+```
+clarify interview "a tiny adder CLI in TypeScript"
+clarify ralph --max-iterations 5
+```
+
+Expected: `state.ralph.status === 'converged'`, `state.ralph.iterations.length <= 5`, `phase === 'done'`. If Ralph stagnates instead, it will auto-invoke `clarify unstuck` exactly once before terminating as `stagnated_after_unstuck`. Inspect `state.unstuck[]` afterward to see which persona was tried and what was suggested.
+
+Pass `--no-unstuck` to disable the escalation, `--per-iteration-timeout-ms 60000` to make each iteration fail fast, or `--total-timeout-ms 1800000` to cap the whole run at 30 minutes.
+
+## Recipe 6 — Manual unstuck by persona
+
+When you want a deliberate change of lens — say, the loop has been retrying `implementation_bug` fixes but you suspect the AC itself is wrong — name the persona explicitly:
+
+```
+clarify unstuck contrarian   # challenge the AC's underlying assumption
+clarify unstuck simplifier   # cut scope; collapse two ACs into one
+clarify unstuck architect    # restructure allowed_paths or split an AC
+```
+
+The skill reads `src/personas/<persona>.md`, applies that lens to the most recent failed AC, and surfaces a concrete next step. With no argument, the persona is auto-picked from the most recent failure category in `state.evaluations`.
+
 ## Smoke without real Claude
 
 Set `CLARIFY_FAKE_CLAUDE='{"score": 0.9, "verdict": "pass", "notes": "ok"}'` to short-circuit `claude -p` calls — useful for CI runs of the eval scripts without burning tokens. The fake string is returned verbatim from every `oneShot` call.

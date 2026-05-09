@@ -99,8 +99,14 @@ That's the whole loop.
 | `clarify run` | Execute the seed's acceptance-criteria tree. |
 | `clarify evaluate [--ac AC-X \| --all]` | 3-stage pipeline: mechanical → LLM review → consensus. |
 | `clarify evolve` | Refine seed on failure or fix the code; retry. |
+| `clarify ralph [flags]` | Drive evaluate→evolve in a bounded loop until converged or capped. |
+| `clarify unstuck [persona]` | Reframe a stuck AC through a lateral-thinking persona. |
 | `clarify status [--deep]` | Drift detection: scope (cheap) + intent (LLM, opt-in). |
 | `clarify help` | Print the available commands. |
+
+### When to use Ralph and Unstuck
+
+`clarify ralph` is the meta-orchestrator over `evaluate` and `evolve`. Use it for unattended runs — a CI job, an idle queue, or "let it cook" — when you don't want to babysit each `evolve` → `evaluate --all` cycle by hand. It keeps an honest cap (default 10 iterations, 30 min per iteration, 2 h total) so it can't run away. `clarify unstuck` is the escalation hatch: when Ralph would otherwise terminate as `stagnated`, it auto-invokes one persona for a single reframing attempt before giving up. You can also invoke `clarify unstuck` manually at any time when you want a deliberate change of lens — `contrarian` to challenge an assumption, `simplifier` to cut scope, and so on.
 
 ## What lives on disk
 
@@ -124,7 +130,7 @@ Three layers, deliberately thin:
 
 A pluggable `Backend` interface (`src/backends/types.ts`) means non-Claude runtimes (Codex, OpenAI, local) can be added behind the same surface later. v1 ships `ClaudeBackend` only.
 
-See [`docs/architecture.md`](./docs/architecture.md) for the design, [`docs/seed-reference.md`](./docs/seed-reference.md) for every seed field, and [`docs/recipes.md`](./docs/recipes.md) for end-to-end smoke tests.
+See [`docs/architecture.md`](./docs/architecture.md) for the design, [`docs/seed-reference.md`](./docs/seed-reference.md) for every seed field, [`docs/recipes.md`](./docs/recipes.md) for end-to-end smoke tests, and [`CHANGELOG.md`](./CHANGELOG.md) for what's new in each release.
 
 ## Local development
 
@@ -145,7 +151,7 @@ Set `CLARIFY_FAKE_CLAUDE='{"score":0.9,"verdict":"pass","notes":"ok"}'` to short
 
 ## Inspired by
 
-[Q00/ouroboros](https://github.com/Q00/ouroboros) (Python). `clarify` is a deliberately-slim TypeScript port focused on the five most load-bearing features (interview, seed/AC tree, evaluation pipeline, evolution loop, drift detection). The full out-of-scope list lives in [`SPEC.md` §2.1](./SPEC.md).
+[Q00/ouroboros](https://github.com/Q00/ouroboros) (Python). `clarify` is a deliberately-slim TypeScript port focused on the load-bearing features: interview, seed/AC tree, evaluation pipeline, evolution loop, drift detection, plus the Ralph meta-orchestrator and Unstuck escalation hatch added in 0.2 (see [`CHANGELOG.md`](./CHANGELOG.md)). The full out-of-scope list lives in [`SPEC.md` §2.1](./SPEC.md).
 
 ## License
 

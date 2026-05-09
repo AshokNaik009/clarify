@@ -9,6 +9,8 @@
     "skills/run",
     "skills/evaluate",
     "skills/evolve",
+    "skills/ralph",
+    "skills/unstuck",
     "skills/status",
     "skills/help"
   ],
