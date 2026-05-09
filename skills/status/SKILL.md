@@ -10,7 +10,7 @@ Report on the live `.clarify/state.json` and `.clarify/seed.yaml`.
 ## Run
 
 ```bash
-${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh status.ts ${ARGS}
+$( [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && echo "$CLAUDE_PLUGIN_ROOT" || find "$HOME/.claude/plugins/cache/clarify/clarify" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1 | grep . || echo .)/bin/clarify-run.sh status.ts ${ARGS}
 ```
 
 Pass `--deep` through if the user invoked `clarify status --deep`. Optional: pass `--since <git-ref>` (defaults to `HEAD~1`) for a different drift baseline.

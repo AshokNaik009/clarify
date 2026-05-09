@@ -13,7 +13,7 @@ Run the 3-stage pipeline against a single AC (`--ac`) or every leaf AC (`--all`)
 - `--all` — every leaf AC in the seed, in declared order.
 - (no flag) — assume `--all` and warn the user.
 
-To enumerate leaves: `${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh run-init.ts` — its output's `leaf_acs` array.
+To enumerate leaves: `$( [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && echo "$CLAUDE_PLUGIN_ROOT" || find "$HOME/.claude/plugins/cache/clarify/clarify" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1 | grep . || echo .)/bin/clarify-run.sh run-init.ts` — its output's `leaf_acs` array.
 
 ## Pipeline
 
@@ -21,13 +21,13 @@ For each target AC, in order:
 
 ```bash
 # Stage 1 — Mechanical (shell exit codes)
-${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh eval-mechanical.ts --ac AC-X
+$( [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && echo "$CLAUDE_PLUGIN_ROOT" || find "$HOME/.claude/plugins/cache/clarify/clarify" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1 | grep . || echo .)/bin/clarify-run.sh eval-mechanical.ts --ac AC-X
 
 # Stage 2 — LLM review (semantic alignment)
-${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh eval-llm.ts --ac AC-X
+$( [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && echo "$CLAUDE_PLUGIN_ROOT" || find "$HOME/.claude/plugins/cache/clarify/clarify" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1 | grep . || echo .)/bin/clarify-run.sh eval-llm.ts --ac AC-X
 
 # Stage 3 — Consensus (mechanical-all-pass AND llm.score >= consensus_min)
-${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh eval-consensus.ts --ac AC-X
+$( [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && echo "$CLAUDE_PLUGIN_ROOT" || find "$HOME/.claude/plugins/cache/clarify/clarify" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1 | grep . || echo .)/bin/clarify-run.sh eval-consensus.ts --ac AC-X
 ```
 
 If Stage 1 fails (any mechanical check non-zero), **still run Stage 2 and Stage 3** — the consensus step records the combined verdict.

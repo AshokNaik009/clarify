@@ -15,7 +15,7 @@ You take a snapshot of the user's existing codebase so the brownfield interview,
 ## Step 1 — execute the script
 
 ```bash
-${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh scan-codebase.ts
+$( [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && echo "$CLAUDE_PLUGIN_ROOT" || find "$HOME/.claude/plugins/cache/clarify/clarify" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1 | grep . || echo .)/bin/clarify-run.sh scan-codebase.ts
 ```
 
 The script:

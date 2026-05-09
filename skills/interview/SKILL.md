@@ -12,7 +12,7 @@ You drive a Socratic interview that ends with a written seed spec. Your job is t
 Before turn 1, check whether the project has manifests (a `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, etc. at the project root). If yes — and there's no `.clarify/state.json` with a populated `scan` block already — run `clarify scan` first:
 
 ```bash
-${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh scan-codebase.ts
+$( [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && echo "$CLAUDE_PLUGIN_ROOT" || find "$HOME/.claude/plugins/cache/clarify/clarify" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1 | grep . || echo .)/bin/clarify-run.sh scan-codebase.ts
 ```
 
 Read the resulting `state.scan.summary` and keep it in working memory for the rest of the interview. If the user has a structured ticket, suggest `clarify ingest` instead of the interview — `ingest` skips the Socratic loop entirely.
@@ -24,7 +24,7 @@ If there are no manifests (greenfield), skip Step 0 and proceed exactly as befor
 If `.clarify/state.json` does not exist (or has no interview turns), ask the user to confirm their one-line idea and record it as the first turn:
 
 ```bash
-${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh interview-record.ts \
+$( [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && echo "$CLAUDE_PLUGIN_ROOT" || find "$HOME/.claude/plugins/cache/clarify/clarify" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1 | grep . || echo .)/bin/clarify-run.sh interview-record.ts \
   --q "Initial idea" \
   --a "<the user's one-line idea verbatim>" \
   --idea "<the user's one-line idea verbatim>"
@@ -47,7 +47,7 @@ Then:
 - Do NOT ask the user. Display a one-line notice: `ℹ️ Auto-confirmed: <slot> = <value> (<manifest>)`.
 - Record the turn yourself with the `[from-code][auto-confirmed]` prefix:
   ```bash
-  ${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh interview-record.ts \
+  $( [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && echo "$CLAUDE_PLUGIN_ROOT" || find "$HOME/.claude/plugins/cache/clarify/clarify" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1 | grep . || echo .)/bin/clarify-run.sh interview-record.ts \
     --q "<your question>" \
     --a "[from-code][auto-confirmed] <value> (<manifest>)"
   ```
@@ -94,7 +94,7 @@ Repeat until `ambiguity_score <= thresholds.ambiguity_max` (default 0.2). Hard c
 Once ambiguity is below the threshold:
 
 ```bash
-${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh seed-crystallize.ts
+$( [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && echo "$CLAUDE_PLUGIN_ROOT" || find "$HOME/.claude/plugins/cache/clarify/clarify" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1 | grep . || echo .)/bin/clarify-run.sh seed-crystallize.ts
 ```
 
 This shells out to `claude -p` and writes `.clarify/seed.yaml`. Print the seed back to the user (read the file) and explicitly ask:

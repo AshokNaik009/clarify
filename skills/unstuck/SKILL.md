@@ -38,7 +38,7 @@ In one short paragraph:
 ## Step 3 — record and (optionally) apply
 
 ```bash
-${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh unstuck-record.ts \
+$( [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && echo "$CLAUDE_PLUGIN_ROOT" || find "$HOME/.claude/plugins/cache/clarify/clarify" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1 | grep . || echo .)/bin/clarify-run.sh unstuck-record.ts \
   [--persona <name>] \
   [--trigger manual|ralph_stagnated] \
   [--category under_specification|contradiction|implementation_bug] \

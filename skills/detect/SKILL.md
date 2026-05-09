@@ -20,9 +20,9 @@ If `.clarify/seed.yaml` is missing, stop and tell the user to run `clarify inges
 ## Step 2 — run the script
 
 ```bash
-${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh detect-mechanical.ts
+$( [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && echo "$CLAUDE_PLUGIN_ROOT" || find "$HOME/.claude/plugins/cache/clarify/clarify" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1 | grep . || echo .)/bin/clarify-run.sh detect-mechanical.ts
 # or, to overwrite existing checks:
-${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh detect-mechanical.ts --force
+$( [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && echo "$CLAUDE_PLUGIN_ROOT" || find "$HOME/.claude/plugins/cache/clarify/clarify" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1 | grep . || echo .)/bin/clarify-run.sh detect-mechanical.ts --force
 ```
 
 ## Step 3 — show the user the proposed checks

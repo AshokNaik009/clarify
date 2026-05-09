@@ -10,7 +10,7 @@ Run when one or more ACs are stuck in `failed`. The loop iterates up to `thresho
 ## Step 1 — analyze
 
 ```bash
-${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh evolve-analyze.ts > /tmp/clarify-analysis.json
+$( [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && echo "$CLAUDE_PLUGIN_ROOT" || find "$HOME/.claude/plugins/cache/clarify/clarify" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1 | grep . || echo .)/bin/clarify-run.sh evolve-analyze.ts > /tmp/clarify-analysis.json
 ```
 
 Read `/tmp/clarify-analysis.json`. Three possible categories:
@@ -32,7 +32,7 @@ Read `/tmp/clarify-analysis.json`. Three possible categories:
 2. Save the Q&A pairs to `/tmp/clarify-clarifications.json` as `[{q, a}, ...]` JSON.
 3. Rewrite the seed:
    ```bash
-   ${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh evolve-rewrite-seed.ts \
+   $( [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && echo "$CLAUDE_PLUGIN_ROOT" || find "$HOME/.claude/plugins/cache/clarify/clarify" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1 | grep . || echo .)/bin/clarify-run.sh evolve-rewrite-seed.ts \
      --analysis /tmp/clarify-analysis.json \
      --clarifications /tmp/clarify-clarifications.json
    ```

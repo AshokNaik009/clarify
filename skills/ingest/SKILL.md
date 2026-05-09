@@ -31,7 +31,7 @@ If the user appended `--no-bridge`, skip the bridging interview entirely (one-sh
 ## Step 3 — Phase 1: draft + gaps
 
 ```bash
-${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh ingest-ticket.ts <ticket-path-or-flags>
+$( [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && echo "$CLAUDE_PLUGIN_ROOT" || find "$HOME/.claude/plugins/cache/clarify/clarify" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1 | grep . || echo .)/bin/clarify-run.sh ingest-ticket.ts <ticket-path-or-flags>
 ```
 
 The script runs ONE `claude -p` call and emits a JSON envelope on stdout. Two shapes:
@@ -83,7 +83,7 @@ ANSWERS=$(mktemp)
 cat > "$ANSWERS" <<'JSON'
 [ ... the answers array ... ]
 JSON
-${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh ingest-finalize.ts --answers "$ANSWERS"
+$( [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && echo "$CLAUDE_PLUGIN_ROOT" || find "$HOME/.claude/plugins/cache/clarify/clarify" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1 | grep . || echo .)/bin/clarify-run.sh ingest-finalize.ts --answers "$ANSWERS"
 rm -f "$ANSWERS"
 ```
 
