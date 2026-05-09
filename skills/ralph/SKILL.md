@@ -1,7 +1,6 @@
 ---
 name: clarify-ralph
-description: Drive the eval→evolve loop to a terminal state with hard caps and a per-iteration timeout. The loop only stops on convergence, exhaustion, timeout, structured failure, or stagnation.
-trigger: "clarify ralph"
+description: "Use when the user says `clarify ralph`, `/clarify-ralph`, or asks clarify to keep running evaluate→evolve unattended until convergence. Bounded by hard caps: max iterations, per-iteration timeout, total wall-clock, stuck threshold."
 ---
 
 # clarify ralph [flags]
@@ -25,7 +24,7 @@ Refuse to start if `.clarify/seed.yaml` is missing — tell the user to run `cla
 ## Step 1 — initialize Ralph
 
 ```bash
-npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/ralph-init.ts \
+${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh ralph-init.ts \
   [--max-iterations N] [--per-iteration-timeout-ms N] \
   [--total-timeout-ms N] [--stuck-threshold N] [--no-unstuck]
 ```
@@ -38,23 +37,23 @@ Repeat until `terminate=true`:
 
 1. **Evaluate every failing or pending leaf AC.** For each leaf with status in `{pending, in_progress, failed}`:
    ```bash
-   npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/eval-mechanical.ts --ac AC-X
-   npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/eval-llm.ts --ac AC-X
-   npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/eval-consensus.ts --ac AC-X
+   ${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh eval-mechanical.ts --ac AC-X
+   ${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh eval-llm.ts --ac AC-X
+   ${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh eval-consensus.ts --ac AC-X
    ```
 
 2. **Decide an action.** If all root ACs passed, jump to Step 3 — Ralph will record `evaluated` and terminate as `converged`.
 
    Otherwise run analysis:
    ```bash
-   npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/evolve-analyze.ts > /tmp/clarify-analysis.json
+   ${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh evolve-analyze.ts > /tmp/clarify-analysis.json
    ```
    Branch on `analysis.category`:
 
    - `implementation_bug` → use your native Edit/Write tools to fix code, scoped to the affected ACs' `allowed_paths`. Re-evaluate just those ACs. Action = `fixed_implementation`.
    - `under_specification` or `contradiction` → ask the user `analysis.questions_for_user` (max 3), one at a time, save Q&A to `/tmp/clarify-clarifications.json`, then:
      ```bash
-     npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/evolve-rewrite-seed.ts \
+     ${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh evolve-rewrite-seed.ts \
        --analysis /tmp/clarify-analysis.json \
        --clarifications /tmp/clarify-clarifications.json
      ```
@@ -64,7 +63,7 @@ Repeat until `terminate=true`:
 
 3. **Record the iteration.** All shells in this iteration must run inside a hard wall-clock cap: pass `timeout` to `spawnSync`, or track elapsed milliseconds in-session. If the cap fires, pass `--action iteration_timeout`.
    ```bash
-   npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/ralph-step.ts \
+   ${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh ralph-step.ts \
      --action <action> \
      --duration-ms <ms> \
      [--notes "<short summary>"]
@@ -78,7 +77,7 @@ Repeat until `terminate=true`:
 
 5. **(Stagnation only) unstuck escalation.** Ralph reads `analysis.category` from the most recent `/tmp/clarify-analysis.json`, then invokes `clarify unstuck` with that category and `--trigger ralph_stagnated`:
    ```bash
-   npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/unstuck-record.ts \
+   ${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh unstuck-record.ts \
      --trigger ralph_stagnated \
      --category <category> \
      --context "<last 3 iterations + failed AC ids>" \
@@ -89,7 +88,7 @@ Repeat until `terminate=true`:
 ## Step 3 — finalize
 
 ```bash
-npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/ralph-finalize.ts
+${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh ralph-finalize.ts
 ```
 
 This seals `state.ralph.status` and `stop_reason`, and updates `state.phase`. Print a one-line summary:

@@ -1,7 +1,6 @@
 ---
 name: clarify-help
-description: List the clarify commands and what each does.
-trigger: "clarify help"
+description: "Use when the user says `clarify help`, `/clarify-help`, or asks what clarify can do. Prints the available clarify commands and one-liners."
 ---
 
 # clarify help

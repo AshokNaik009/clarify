@@ -1,7 +1,6 @@
 ---
 name: clarify-detect
-description: One LLM call against the project's manifests to fill seed.mechanical_checks with the project's actual lint/typecheck/test/build commands.
-trigger: "clarify detect"
+description: "Use when the user says `clarify detect`, `/clarify-detect`, or asks clarify to discover/author the project's lint/typecheck/test/build commands. One LLM call against the manifests; writes into seed.mechanical_checks."
 ---
 
 # clarify detect
@@ -21,9 +20,9 @@ If `.clarify/seed.yaml` is missing, stop and tell the user to run `clarify inges
 ## Step 2 — run the script
 
 ```bash
-npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/detect-mechanical.ts
+${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh detect-mechanical.ts
 # or, to overwrite existing checks:
-npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/detect-mechanical.ts --force
+${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh detect-mechanical.ts --force
 ```
 
 ## Step 3 — show the user the proposed checks

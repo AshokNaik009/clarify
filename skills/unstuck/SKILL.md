@@ -1,7 +1,6 @@
 ---
 name: clarify-unstuck
-description: Reframe a stuck AC through one of five lateral-thinking personas (contrarian, hacker, simplifier, researcher, architect). Manually invokable; auto-invoked once by Ralph when it would otherwise stagnate.
-trigger: "clarify unstuck"
+description: "Use when the user says `clarify unstuck`, `/clarify-unstuck`, asks clarify to apply a lateral-thinking persona, or wants to reframe a stuck AC. Personas: contrarian, hacker, simplifier, researcher, architect. Auto-picked from failure category; explicit name overrides."
 ---
 
 # clarify unstuck [persona]
@@ -39,7 +38,7 @@ In one short paragraph:
 ## Step 3 — record and (optionally) apply
 
 ```bash
-npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/unstuck-record.ts \
+${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh unstuck-record.ts \
   [--persona <name>] \
   [--trigger manual|ralph_stagnated] \
   [--category under_specification|contradiction|implementation_bug] \

@@ -1,7 +1,6 @@
 ---
 name: clarify-status
-description: Report current phase, AC progress, and drift (scope cheap; intent only with --deep).
-trigger: "clarify status"
+description: "Use when the user says `clarify status`, `/clarify-status`, or asks clarify for a drift / progress report. Cheap by default (scope drift via file→AC mapping); pass --deep for an LLM-based intent-drift narrative."
 ---
 
 # clarify status [--deep]
@@ -11,7 +10,7 @@ Report on the live `.clarify/state.json` and `.clarify/seed.yaml`.
 ## Run
 
 ```bash
-npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/status.ts ${ARGS}
+${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh status.ts ${ARGS}
 ```
 
 Pass `--deep` through if the user invoked `clarify status --deep`. Optional: pass `--since <git-ref>` (defaults to `HEAD~1`) for a different drift baseline.

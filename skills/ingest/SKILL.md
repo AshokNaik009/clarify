@@ -1,7 +1,6 @@
 ---
 name: clarify-ingest
-description: Brownfield-native entry. Read a ticket, run a 1-shot LLM crystallization, then resolve at most 5 gap questions with the user before writing the seed.
-trigger: "clarify ingest"
+description: "Use when the user says `clarify ingest`, `/clarify-ingest`, hands clarify a Jira/Linear/PM ticket, or asks to crystallize a brownfield seed from existing requirements. Two-phase: drafts a seed, surfaces ≤5 gap questions, finalizes seed.yaml."
 ---
 
 # clarify ingest <ticket-file>  (or `--text "<paste>"`)
@@ -32,7 +31,7 @@ If the user appended `--no-bridge`, skip the bridging interview entirely (one-sh
 ## Step 3 — Phase 1: draft + gaps
 
 ```bash
-npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/ingest-ticket.ts <ticket-path-or-flags>
+${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh ingest-ticket.ts <ticket-path-or-flags>
 ```
 
 The script runs ONE `claude -p` call and emits a JSON envelope on stdout. Two shapes:
@@ -84,7 +83,7 @@ ANSWERS=$(mktemp)
 cat > "$ANSWERS" <<'JSON'
 [ ... the answers array ... ]
 JSON
-npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/ingest-finalize.ts --answers "$ANSWERS"
+${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh ingest-finalize.ts --answers "$ANSWERS"
 rm -f "$ANSWERS"
 ```
 

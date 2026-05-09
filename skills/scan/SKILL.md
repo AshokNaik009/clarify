@@ -1,7 +1,6 @@
 ---
 name: clarify-scan
-description: Scan the current working directory for project manifests and write a structured codebase summary into .clarify/state.json under `scan`. Brownfield prep step.
-trigger: "clarify scan"
+description: "Use when the user says `clarify scan`, `/clarify-scan`, or asks to snapshot/scan the project's existing codebase before brownfield ingest. Walks manifests (package.json, pyproject.toml, tsconfig, Dockerfile, …) and writes a ≤500-word summary into state.scan."
 ---
 
 # clarify scan
@@ -16,7 +15,7 @@ You take a snapshot of the user's existing codebase so the brownfield interview,
 ## Step 1 — execute the script
 
 ```bash
-npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/scan-codebase.ts
+${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh scan-codebase.ts
 ```
 
 The script:

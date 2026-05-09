@@ -1,7 +1,6 @@
 ---
 name: clarify-evaluate
-description: Run the 3-stage evaluation pipeline (mechanical → LLM review → consensus) for one AC or all.
-trigger: "clarify evaluate"
+description: "Use when the user says `clarify evaluate`, `/clarify-evaluate`, or asks clarify to run the 3-stage pipeline (mechanical → LLM review → consensus) on one AC or all of them."
 ---
 
 # clarify evaluate [--ac AC-X | --all]
@@ -14,7 +13,7 @@ Run the 3-stage pipeline against a single AC (`--ac`) or every leaf AC (`--all`)
 - `--all` — every leaf AC in the seed, in declared order.
 - (no flag) — assume `--all` and warn the user.
 
-To enumerate leaves: `npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/run-init.ts` — its output's `leaf_acs` array.
+To enumerate leaves: `${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh run-init.ts` — its output's `leaf_acs` array.
 
 ## Pipeline
 
@@ -22,13 +21,13 @@ For each target AC, in order:
 
 ```bash
 # Stage 1 — Mechanical (shell exit codes)
-npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/eval-mechanical.ts --ac AC-X
+${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh eval-mechanical.ts --ac AC-X
 
 # Stage 2 — LLM review (semantic alignment)
-npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/eval-llm.ts --ac AC-X
+${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh eval-llm.ts --ac AC-X
 
 # Stage 3 — Consensus (mechanical-all-pass AND llm.score >= consensus_min)
-npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/eval-consensus.ts --ac AC-X
+${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh eval-consensus.ts --ac AC-X
 ```
 
 If Stage 1 fails (any mechanical check non-zero), **still run Stage 2 and Stage 3** — the consensus step records the combined verdict.

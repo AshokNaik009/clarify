@@ -1,7 +1,6 @@
 ---
 name: clarify-evolve
-description: When ACs fail, diagnose the failure category and either rewrite the seed or fix the code, then retry.
-trigger: "clarify evolve"
+description: "Use when the user says `clarify evolve`, `/clarify-evolve`, or asks clarify to diagnose AC failures and either rewrite the seed (under-spec, contradiction) or fix the code (implementation-bug, pre-existing-behavior)."
 ---
 
 # clarify evolve
@@ -11,7 +10,7 @@ Run when one or more ACs are stuck in `failed`. The loop iterates up to `thresho
 ## Step 1 — analyze
 
 ```bash
-npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/evolve-analyze.ts > /tmp/clarify-analysis.json
+${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh evolve-analyze.ts > /tmp/clarify-analysis.json
 ```
 
 Read `/tmp/clarify-analysis.json`. Three possible categories:
@@ -33,7 +32,7 @@ Read `/tmp/clarify-analysis.json`. Three possible categories:
 2. Save the Q&A pairs to `/tmp/clarify-clarifications.json` as `[{q, a}, ...]` JSON.
 3. Rewrite the seed:
    ```bash
-   npx tsx ${CLAUDE_PLUGIN_DIR:-.}/scripts/evolve-rewrite-seed.ts \
+   ${CLAUDE_PLUGIN_ROOT:-.}/bin/clarify-run.sh evolve-rewrite-seed.ts \
      --analysis /tmp/clarify-analysis.json \
      --clarifications /tmp/clarify-clarifications.json
    ```

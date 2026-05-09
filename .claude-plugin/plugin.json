@@ -1,21 +1,24 @@
 {
   "name": "clarify",
   "version": "0.3.0",
-  "description": "Specification-first AI coding workflow as a Claude Code plugin.",
-  "author": "Ashok Naik",
+  "description": "Specification-first AI coding workflow as a Claude Code plugin. Greenfield + brownfield, MCP-free.",
+  "author": {
+    "name": "Ashok Naik",
+    "email": "naikashok08@gmail.com"
+  },
+  "homepage": "https://github.com/AshokNaik009/clarify",
+  "repository": "https://github.com/AshokNaik009/clarify",
   "license": "MIT",
-  "skills": [
-    "skills/interview",
-    "skills/scan",
-    "skills/ingest",
-    "skills/detect",
-    "skills/run",
-    "skills/evaluate",
-    "skills/evolve",
-    "skills/ralph",
-    "skills/unstuck",
-    "skills/status",
-    "skills/help"
+  "keywords": [
+    "workflow",
+    "specification",
+    "socratic",
+    "interview",
+    "seed",
+    "evaluation",
+    "brownfield"
   ],
+  "skills": "./skills/",
+  "commands": "./commands/",
   "requires": { "node": ">=20" }
 }
