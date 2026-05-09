@@ -55,6 +55,25 @@ export function diffForPaths(paths: string[], opts: GitOptions = {}): string {
   return r.stdout;
 }
 
+/**
+ * Recent git log entries for a set of paths (`--oneline -- <paths>`). Used
+ * by the brownfield LLM-review prompt so the reviewer sees recent history.
+ * Returns one log line per entry (empty string if not a git repo or no history).
+ */
+export function recentLogForPaths(
+  paths: string[],
+  limit: number = 5,
+  opts: GitOptions = {},
+): string {
+  const cwd = opts.cwd ?? process.cwd();
+  if (!isGitRepo({ cwd })) return '';
+  const args = ['log', `-n`, String(limit), '--oneline'];
+  if (paths.length > 0) args.push('--', ...paths);
+  const r = spawnSync('git', args, { cwd, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 });
+  if (r.status !== 0) return '';
+  return r.stdout.trim();
+}
+
 function parseFileList(stdout: string | undefined): string[] {
   if (!stdout) return [];
   return stdout

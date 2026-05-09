@@ -1,0 +1,42 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "clarify",
+  "description": "Specification-first AI coding workflow — Socratic interview, AC tree, 3-stage evaluation, brownfield-aware",
+  "owner": {
+    "name": "Ashok Naik",
+    "email": "naikashok08@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "clarify",
+      "description": "Turn vague ideas (or tickets) into verified, working code via interview/seed/execute/evaluate/evolve. Greenfield + brownfield, MCP-free, zero AI SDK deps.",
+      "version": "0.3.0",
+      "author": {
+        "name": "Ashok Naik",
+        "email": "naikashok08@gmail.com"
+      },
+      "source": "./",
+      "category": "development",
+      "homepage": "https://github.com/AshokNaik009/clarify",
+      "repository": "https://github.com/AshokNaik009/clarify",
+      "license": "MIT",
+      "keywords": [
+        "workflow",
+        "specification",
+        "socratic",
+        "interview",
+        "seed",
+        "evaluation",
+        "brownfield",
+        "ralph",
+        "ac-tree"
+      ],
+      "tags": [
+        "specification-first",
+        "evaluation",
+        "brownfield",
+        "ralph-loop"
+      ]
+    }
+  ]
+}

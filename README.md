@@ -17,6 +17,8 @@ The bug isn't the model. The bug is that **"build me a todo CLI"** is six unansw
 
 `clarify` makes the contract explicit, machine-checkable, and impossible to skip.
 
+Works **greenfield** (interview a vague idea into a seed) and **brownfield** (consume a ticket plus your existing codebase, infer mechanical checks from your manifests, and constrain edits via per-AC `allowed_paths`).
+
 ## What it actually does
 
 Five steps, in order, every time:
@@ -95,7 +97,10 @@ That's the whole loop.
 
 | Command | What it does |
 |---|---|
-| `clarify interview "<idea>"` | Socratic Q&A → writes `.clarify/seed.yaml`. |
+| `clarify interview "<idea>"` | Socratic Q&A → writes `.clarify/seed.yaml`. Brownfield-aware. |
+| `clarify scan` | Snapshot manifests + structured codebase summary into `state.scan`. |
+| `clarify ingest <ticket>` | Brownfield-native: ticket + scan → up to 5 gap questions → `seed.yaml`. |
+| `clarify detect` | Author `seed.mechanical_checks` from project manifests via one LLM call. |
 | `clarify run` | Execute the seed's acceptance-criteria tree. |
 | `clarify evaluate [--ac AC-X \| --all]` | 3-stage pipeline: mechanical → LLM review → consensus. |
 | `clarify evolve` | Refine seed on failure or fix the code; retry. |
@@ -104,9 +109,204 @@ That's the whole loop.
 | `clarify status [--deep]` | Drift detection: scope (cheap) + intent (LLM, opt-in). |
 | `clarify help` | Print the available commands. |
 
+### Brownfield mode
+
+When you're working on an existing repo, skip the long Socratic loop and feed `clarify` a ticket plus a snapshot of what already exists:
+
+```text
+clarify scan                              # → .clarify/state.json :: scan summary + tech stack
+clarify ingest jira-AUTH-1234.md          # → drafts seed, asks ≤5 gap questions, writes seed.yaml
+clarify detect                            # → seed.mechanical_checks filled from your package.json/etc.
+clarify ralph --max-iterations 5          # run evaluate→evolve until converged or capped
+```
+
+`clarify ingest` runs in **two phases**, mirroring how ouroboros does PM-driven interviews:
+
+1. **Phase 1 — draft + gaps.** One `claude -p` call against the `seed-architect` persona produces a draft seed AND a list of high-impact decisions the ticket left open (e.g. "enforce or only suggest no-new-deps?", "is the webhook handler `src/api/webhooks/` or `src/services/billing/webhooks/`?"). Hard-capped at 5 questions.
+2. **Phase 2 — bridging interview + finalize.** The skill walks the gaps via `AskUserQuestion`. The user can answer or pick "Decide later" per gap. Their answers are folded back into a second `seed-architect` call that writes the final `.clarify/seed.yaml`. Anything deferred lands in `seed.brownfield.unresolved_gaps[]` so the LLM-review stage sees it on every AC review later.
+
+If the ticket is fully unambiguous (`gaps: []`), Phase 2 is skipped and the seed is written immediately. Pass `--no-bridge` to force one-shot mode regardless. Anything beyond the 5-question cap also lands in `unresolved_gaps[]`.
+
+The brownfield-aware interview (`clarify interview`) is the fallback for when the ticket is informal or absent: it auto-confirms manifest-known facts (language, package manager, framework versions) instead of asking the user, and the **Dialectic Rhythm Guard** still routes every fourth question to the user so you don't lose the plot. Greenfield users see no change unless they invoke the new commands.
+
 ### When to use Ralph and Unstuck
 
 `clarify ralph` is the meta-orchestrator over `evaluate` and `evolve`. Use it for unattended runs — a CI job, an idle queue, or "let it cook" — when you don't want to babysit each `evolve` → `evaluate --all` cycle by hand. It keeps an honest cap (default 10 iterations, 30 min per iteration, 2 h total) so it can't run away. `clarify unstuck` is the escalation hatch: when Ralph would otherwise terminate as `stagnated`, it auto-invokes one persona for a single reframing attempt before giving up. You can also invoke `clarify unstuck` manually at any time when you want a deliberate change of lens — `contrarian` to challenge an assumption, `simplifier` to cut scope, and so on.
+
+## How it flows (visual)
+
+Four diagrams. Each one is a complete picture of one part of the loop — read the one that matches what you're trying to do.
+
+### 1. Greenfield: vague idea → verified code
+
+```
+   "build me a thing"
+            │
+            ▼
+   ┌────────────────┐         one Q at a time, ambiguity-driven
+   │   interview    │   ─────────────────────────────────────────▶  user
+   │  (Socratic)    │   ◀─────────────────────────────────────────  user
+   └────────────────┘         until ambiguity_score ≤ 0.2
+            │
+            ▼   crystallize (claude -p)
+   ┌────────────────┐
+   │   seed.yaml    │   immutable contract:
+   │                │     • description
+   │                │     • acceptance_criteria (AC tree, recursive)
+   │                │     • each leaf has allowed_paths globs
+   │                │     • mechanical_checks
+   │                │     • thresholds  (ambiguity, consensus, drift)
+   └────────────────┘
+            │
+            ▼   walk leaf ACs in declared order
+   ┌────────────────┐
+   │      run       │   for each leaf:
+   │                │     1. Claude writes code (Edit/Write,
+   │                │        scoped by allowed_paths)
+   │                │     2. clarify evaluate --ac AC-X
+   └────────────────┘
+            │
+            ▼
+   ┌────────────────┐
+   │    evaluate    │   3-stage pipeline (see §3 below)
+   └────────────────┘
+            │
+       ┌────┴────┐
+       │         │
+     pass      fail
+       │         │
+       │         ▼
+       │  ┌────────────────┐
+       │  │     evolve     │   diagnose + fix; loop back to evaluate
+       │  └────────────────┘   (capped at thresholds.max_evolutions)
+       │         │
+       └─────────┘
+            │
+            ▼
+        all pass  →  phase=done
+```
+
+### 2. Brownfield: ticket → seed (two-phase ingest)
+
+```
+                     ┌────────────────┐
+                     │ clarify scan   │   one-shot codebase summary
+                     └────────────────┘   ─▶ state.scan
+                            │                (tech_stack, patterns, manifests)
+                            ▼
+   ticket.md ──┐    ┌────────────────────────┐
+               ├──▶│  ingest  (Phase 1)      │   one claude -p
+   state.scan ─┘    │  MODE=draft             │   ──▶ { draft_seed, gaps[≤5] }
+                    └────────────────────────┘
+                            │
+                ┌───────────┴───────────┐
+                │                       │
+             gaps == [ ]             gaps != [ ]
+            (or --no-bridge)               │
+                │                          ▼
+                │              ┌─────────────────────────┐
+                │              │  bridging interview     │
+                │              │  (skill, ≤5 questions)  │
+                │              │                         │
+                │              │  per gap:               │
+                │              │    AskUserQuestion {    │
+                │              │      "<gap.question>"   │
+                │              │      • <option-1>       │
+                │              │      • <option-2>       │
+                │              │      • Decide later     │
+                │              │    }                    │
+                │              └─────────────────────────┘
+                │                          │
+                │                          ▼
+                │              ┌─────────────────────────┐
+                │              │  ingest  (Phase 2)      │   one claude -p
+                │              │  MODE=finalize          │   ──▶ final seed
+                │              │  + answers folded in    │
+                │              └─────────────────────────┘
+                │                          │
+                └─────────────┬────────────┘
+                              ▼
+                     ┌────────────────┐
+                     │  seed.yaml     │   • brownfield.project_type
+                     │                │   • brownfield.unresolved_gaps[]
+                     │                │     (deferrals + 5-cap overflow)
+                     │                │   • lineage.ticket_ref
+                     └────────────────┘
+                              │
+                              ▼
+                       clarify detect  →  clarify run  /  clarify ralph
+```
+
+### 3. Per-AC evaluation: the 3-stage pipeline
+
+```
+       ┌──────────────────────────┐
+       │  AC-X (one leaf)         │
+       │  • title, intent         │
+       │  • allowed_paths         │
+       └──────────────────────────┘
+                  │
+                  ▼
+   ┌─────────────────────────────────┐
+   │ Stage 1 — Mechanical            │   for each cmd in seed.mechanical_checks:
+   │                                 │     execSync(cmd, timeout=5min)
+   │   exit==0 ? pass : fail         │   any non-zero → AC fails; skip Stage 2
+   └─────────────────────────────────┘
+                  │
+              all pass
+                  │
+                  ▼
+   ┌─────────────────────────────────┐
+   │ Stage 2 — LLM review            │   claude -p with:
+   │                                 │     • AC + intent
+   │   { score, verdict, notes }     │     • git diff filtered to allowed_paths
+   │                                 │     • brownfield context (if present)
+   │                                 │     • last 5 git log lines (brownfield)
+   └─────────────────────────────────┘
+                  │
+                  ▼
+   ┌─────────────────────────────────┐   pass iff:
+   │ Stage 3 — Consensus             │     mechanical.all_pass
+   │                                 │       AND
+   │   pass / fail → state.json      │     llm.score ≥ thresholds.consensus_min
+   └─────────────────────────────────┘     (default 0.8)
+```
+
+### 4. Brownfield interview routing + Dialectic Rhythm Guard
+
+```
+   MCP-free Socratic interview, brownfield-aware.
+
+   ┌────────────────────────────────────────────────────────────┐
+   │  next question (auto-picked from unfilled slots)            │
+   └─────┬───────────────────────────────────────────────────────┘
+         │
+         │  Is the answer in a manifest, exact match, no judgment?
+         ├──── yes ────▶ PATH 1a  auto-confirm, notify only           ┐
+         │                                                            │
+         │  Codebase suggests an answer (not exact)?                  │
+         ├──── yes ────▶ PATH 1b  show finding + ask user "yes/no"    │ counter
+         │                                                            │ ++
+         │  External fact (API/library/pricing)?                      │
+         ├──── yes ────▶ PATH 4   WebFetch + confirm with user        ┘
+         │
+         │  Pure judgment / scope / business / new-feature behavior?
+         ├──── yes ────▶ PATH 2   ask user directly        counter := 0
+         │
+         │  Code fact + judgment ("X exists; should Y use it?")
+         └──── yes ────▶ PATH 3   show + judgment to user  counter := 0
+
+
+   ┌────────────────────────────────────────────────────────────┐
+   │  Dialectic Rhythm Guard                                     │
+   │                                                             │
+   │  if counter ≥ 3                                             │
+   │      next question MUST be PATH 2 (route to user)           │
+   │  reset on every PATH 2 / PATH 3 turn                        │
+   │                                                             │
+   │  → keeps the dialectic with the human, not the codebase    │
+   └────────────────────────────────────────────────────────────┘
+```
 
 ## What lives on disk
 

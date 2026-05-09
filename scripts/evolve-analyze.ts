@@ -9,7 +9,12 @@ import { diffForPaths } from '../src/lib/git.js';
 import { effectivePaths, findAC } from '../src/lib/ac.js';
 
 const AnalysisSchema = z.object({
-  category: z.enum(['under_specification', 'contradiction', 'implementation_bug']),
+  category: z.enum([
+    'under_specification',
+    'contradiction',
+    'implementation_bug',
+    'pre_existing_behavior',
+  ]),
   summary: z.string(),
   affected_ac_ids: z.array(z.string()),
   questions_for_user: z.array(z.string()).max(3).default([]),

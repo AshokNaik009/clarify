@@ -190,6 +190,19 @@ export const UnstuckEntrySchema = z
   .strict();
 export type UnstuckEntry = z.infer<typeof UnstuckEntrySchema>;
 
+export const ScanSnapshotSchema = z
+  .object({
+    scanned_at: z.string().datetime({ offset: true }),
+    root: z.string(),
+    tech_stack: z.string().default(''),
+    summary: z.string().default(''),
+    manifests: z.array(z.string()).default([]),
+    package_manager: z.string().nullable().default(null),
+    is_brownfield: z.boolean().default(false),
+  })
+  .strict();
+export type ScanSnapshot = z.infer<typeof ScanSnapshotSchema>;
+
 export const StateSchema = z
   .object({
     schema_version: z.literal(1),
@@ -222,6 +235,7 @@ export const StateSchema = z
     evolutions: z.array(EvolutionRefSchema).default([]),
     ralph: RalphSchema.optional(),
     unstuck: z.array(UnstuckEntrySchema).default([]),
+    scan: ScanSnapshotSchema.optional(),
   })
   .strict();
 

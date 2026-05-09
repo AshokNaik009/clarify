@@ -59,11 +59,34 @@ export const ThresholdsSchema = z
 
 export const LineageSchema = z
   .object({
-    source: z.enum(['interview', 'evolution', 'manual']).default('interview'),
+    source: z.enum(['interview', 'evolution', 'manual', 'ingest']).default('interview'),
     interview_transcript: z.string().nullable().optional(),
     parent_seed: z.string().nullable().optional(),
+    ticket_ref: z.string().nullable().optional(),
   })
   .strict();
+
+export const ContextReferenceSchema = z
+  .object({
+    path: z.string().min(1),
+    role: z.enum(['primary', 'reference']),
+    summary: z.string().max(200).default(''),
+  })
+  .strict();
+export type ContextReference = z.infer<typeof ContextReferenceSchema>;
+
+export const BrownfieldContextSchema = z
+  .object({
+    project_type: z.enum(['greenfield', 'brownfield']).default('greenfield'),
+    tech_stack: z.string().default(''),
+    context_references: z.array(ContextReferenceSchema).default([]),
+    existing_patterns: z.array(z.string()).default([]),
+    existing_dependencies: z.array(z.string()).default([]),
+    forbidden_new_dependencies: z.boolean().default(false),
+    unresolved_gaps: z.array(z.string()).default([]),
+  })
+  .strict();
+export type BrownfieldContext = z.infer<typeof BrownfieldContextSchema>;
 
 export const SeedSchema = z
   .object({
@@ -77,6 +100,7 @@ export const SeedSchema = z
     mechanical_checks: z.array(MechanicalCheckSchema).default([]),
     thresholds: ThresholdsSchema,
     lineage: LineageSchema,
+    brownfield: BrownfieldContextSchema.optional(),
   })
   .strict();
 

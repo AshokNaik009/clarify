@@ -5,8 +5,9 @@ import { loadState, saveState } from '../src/lib/state.js';
 import { findAC, effectivePaths } from '../src/lib/ac.js';
 import { renderPrompt } from '../src/lib/prompts.js';
 import { oneShotJson } from '../src/lib/claude.js';
-import { diffForPaths } from '../src/lib/git.js';
+import { diffForPaths, recentLogForPaths } from '../src/lib/git.js';
 import { LLMReviewSchema } from '../src/schema/state.js';
+import { buildBrownfieldBlock } from '../src/lib/brownfield-prompt.js';
 
 function main(): void {
   const args = parseArgs();
@@ -27,6 +28,9 @@ function main(): void {
   const diff = diffForPaths(paths);
   const truncatedDiff = diff.length > 60_000 ? diff.slice(0, 60_000) + '\n...[truncated]\n' : diff;
 
+  const recentLog = seed.brownfield?.project_type === 'brownfield' ? recentLogForPaths(paths, 5) : '';
+  const brownfieldBlock = buildBrownfieldBlock(seed, recentLog);
+
   const prompt = renderPrompt('llm-review', {
     AC_ID: ac.id,
     AC_TITLE: ac.title,
@@ -34,6 +38,7 @@ function main(): void {
     AC_PATHS: JSON.stringify(paths),
     MECHANICAL_JSON: JSON.stringify(last.mechanical, null, 2),
     DIFF: truncatedDiff || '(no diff in allowed_paths)',
+    BROWNFIELD_BLOCK: brownfieldBlock,
   });
 
   const raw = oneShotJson<unknown>(prompt, { timeoutMs: 3 * 60 * 1000 });

@@ -16,6 +16,8 @@ You are the LLM-review stage of `clarify`'s 3-stage evaluation pipeline.
 {{DIFF}}
 ```
 
+{{BROWNFIELD_BLOCK}}
+
 # Task
 
 Decide whether the diff *plausibly satisfies* the acceptance criterion's stated intent. You are NOT re-running tests — that's mechanical's job. You are checking semantic alignment: does the code do what the AC describes?

@@ -13,6 +13,9 @@ clarify — specification-first AI coding workflow
 
 Commands:
   clarify interview "<one-line idea>"   Run a Socratic interview, write seed.yaml.
+  clarify scan                           Snapshot the project's manifests + summary into state.scan.
+  clarify ingest <ticket>                Brownfield-native: ticket + scan → seed.yaml in one call.
+  clarify detect                         Author seed.mechanical_checks from project manifests.
   clarify run                            Execute the seed's AC tree.
   clarify evaluate [--ac AC-X | --all]   3-stage eval pipeline.
   clarify evolve                         Diagnose failures; rewrite seed or fix code; retry.
