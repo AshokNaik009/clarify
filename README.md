@@ -105,6 +105,7 @@ That's the whole loop.
 | `clarify evaluate [--ac AC-X \| --all]` | 3-stage pipeline: mechanical → LLM review → consensus. |
 | `clarify evolve` | Refine seed on failure or fix the code; retry. |
 | `clarify ralph [flags]` | Drive evaluate→evolve in a bounded loop until converged or capped. |
+| `clarify goal "<goal>" [flags]` | Supervised peer to ralph: one goal-aligned AC per iteration, user checkpoint between each. |
 | `clarify unstuck [persona]` | Reframe a stuck AC through a lateral-thinking persona. |
 | `clarify status [--deep]` | Drift detection: scope (cheap) + intent (LLM, opt-in). |
 | `clarify help` | Print the available commands. |
@@ -129,9 +130,15 @@ If the ticket is fully unambiguous (`gaps: []`), Phase 2 is skipped and the seed
 
 The brownfield-aware interview (`clarify interview`) is the fallback for when the ticket is informal or absent: it auto-confirms manifest-known facts (language, package manager, framework versions) instead of asking the user, and the **Dialectic Rhythm Guard** still routes every fourth question to the user so you don't lose the plot. Greenfield users see no change unless they invoke the new commands.
 
-### When to use Ralph and Unstuck
+### When to use Ralph, Goal, and Unstuck
 
-`clarify ralph` is the meta-orchestrator over `evaluate` and `evolve`. Use it for unattended runs — a CI job, an idle queue, or "let it cook" — when you don't want to babysit each `evolve` → `evaluate --all` cycle by hand. It keeps an honest cap (default 10 iterations, 30 min per iteration, 2 h total) so it can't run away. `clarify unstuck` is the escalation hatch: when Ralph would otherwise terminate as `stagnated`, it auto-invokes one persona for a single reframing attempt before giving up. You can also invoke `clarify unstuck` manually at any time when you want a deliberate change of lens — `contrarian` to challenge an assumption, `simplifier` to cut scope, and so on.
+Post-seed, you fork into three execution modes. Pick the one that matches your attention budget:
+
+- **`clarify run`** — manual, every AC in declared order, evaluate after each. Best when you want full control and to watch every step.
+- **`clarify ralph`** — unattended. Loops `evaluate` → `evolve` over **every** failing AC each iteration; auto-evolves the seed on diagnosed failures; auto-invokes `unstuck` once on stagnation. Best for a CI job, an idle queue, or "let it cook" runs. Honest hard caps (default 10 iterations, 30 min per iteration, 2 h total) so it can't run away.
+- **`clarify goal "<goal>"`** — supervised peer to ralph. Picks the **one** AC most aligned with your stated goal each iteration, checkpoints with you before implementation (`implement / pick another / change goal / stop`), checkpoints again after evaluation, never auto-evolves (failures surface back to you). Best for time-boxed slices — "ship the auth flow", "wire the read-only API" — where you want to skip ACs that aren't on the goal path rather than evolve the seed around them.
+
+`clarify unstuck` is the escalation hatch for `ralph`: when Ralph would otherwise terminate as `stagnated`, it auto-invokes one persona for a single reframing attempt before giving up. You can also invoke `clarify unstuck` manually at any time when you want a deliberate change of lens — `contrarian` to challenge an assumption, `simplifier` to cut scope, and so on.
 
 ## How it flows (visual)
 

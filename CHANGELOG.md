@@ -6,6 +6,60 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-05-16
+
+### Added
+
+- **`clarify goal "<one-line goal>" [flags]`** — supervised peer to `clarify
+  ralph` at the post-seed fork. Where ralph attacks every failing AC each
+  iteration and auto-evolves the seed on stagnation, `goal` attacks **one**
+  AC per iteration (the one most aligned with the user's stated goal) and
+  checkpoints with the user between each. Never auto-evolves: failures
+  surface to the user via the post-iteration checkpoint. Useful for
+  time-boxed slices ("ship the auth flow") where you want to skip ACs
+  that aren't on the goal path rather than evolve the seed around them.
+  - Flags: `--goal "<text>"`, `--max-iterations N` (default 10, max 50),
+    `--per-iteration-timeout-ms N` (30 min), `--total-timeout-ms N` (2 h),
+    `--alignment-min F` (default 0.5; ACs below this score treated as
+    not-goal-aligned).
+  - Per-iteration algorithm: rank pending ACs against the goal via one
+    `claude -p` call → user checkpoint (`implement / pick another /
+    change goal / stop`) → mark in_progress, implement, evaluate
+    (3-stage pipeline, one retry on fail) → post-iteration checkpoint
+    (`continue / change goal / stop`). Loop until `achieved`,
+    `exhausted`, `no_aligned_acs`, `iteration_timeout`, `total_timeout`,
+    or `abandoned`.
+  - New scripts: `scripts/goal-init.ts`, `scripts/goal-select-ac.ts`,
+    `scripts/goal-step.ts`, `scripts/goal-finalize.ts`.
+  - New pure helpers in `src/lib/goal.ts`: `shouldTerminate`,
+    `summarizeGoalProgress`, `reasonToStatus`.
+  - New prompt: `src/prompts/select-ac-for-goal.md` — ranks pending ACs
+    against the goal on `[0,1]` with per-AC rationales.
+  - Skill at `skills/goal/SKILL.md`, slash entry at
+    `commands/clarify-goal.md`.
+- **State schema additions** (`src/schema/state.ts`):
+  - `GoalIterationActionSchema`, `GoalIterationSchema`, `GoalConfigSchema`,
+    `GoalStatusSchema`, `GoalHistoryEntrySchema`, `GoalSchema`.
+  - `StateSchema` extended with optional `goal`. Goal mutation mid-run
+    keeps the same `state.goal` block and pushes the previous statement
+    into `state.goal.history[]` so the iteration log stays continuous.
+
+### Changed
+
+- README — new `clarify goal` row in the commands table; "When to use Ralph
+  and Unstuck" rewritten to "When to use Ralph, Goal, and Unstuck" with the
+  three-way fork (manual `run`, unattended `ralph`, supervised `goal`).
+- `clarify help` output gains the `clarify goal` line.
+
+### Notes
+
+- Goal never re-prompts Claude through `claude -p` for code edits — the
+  active session does the work. The only `claude -p` call in the loop is
+  AC alignment scoring (`goal-select-ac.ts`).
+- Goal deliberately does not auto-evolve the seed. If you want
+  auto-evolution on failure, use `clarify ralph` instead — or run
+  `clarify evolve` manually on a failed AC after the goal loop finalizes.
+
 ## [0.3.0] — 2026-05-09
 
 ### Added
@@ -186,6 +240,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `CLARIFY_FAKE_CLAUDE` env var to short-circuit `claude -p` calls in CI
   and unit tests.
 
-[Unreleased]: https://github.com/AshokNaik009/clarify/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/AshokNaik009/clarify/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/AshokNaik009/clarify/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/AshokNaik009/clarify/compare/v0.1.0...v0.3.0
 [0.1.0]: https://github.com/AshokNaik009/clarify/releases/tag/v0.1.0

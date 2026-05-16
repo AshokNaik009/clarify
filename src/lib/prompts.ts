@@ -12,7 +12,8 @@ export type PromptName =
   | 'llm-review'
   | 'analyze-failure'
   | 'rewrite-seed'
-  | 'intent-drift';
+  | 'intent-drift'
+  | 'select-ac-for-goal';
 
 export function loadPrompt(name: PromptName): string {
   const path = join(PROMPTS_DIR, `${name}.md`);

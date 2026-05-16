@@ -10,7 +10,7 @@
     {
       "name": "clarify",
       "description": "Turn vague ideas (or tickets) into verified, working code via interview/seed/execute/evaluate/evolve. Greenfield + brownfield, MCP-free, zero AI SDK deps.",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "author": {
         "name": "Ashok Naik",
         "email": "naikashok08@gmail.com"
@@ -29,13 +29,15 @@
         "evaluation",
         "brownfield",
         "ralph",
+        "goal",
         "ac-tree"
       ],
       "tags": [
         "specification-first",
         "evaluation",
         "brownfield",
-        "ralph-loop"
+        "ralph-loop",
+        "goal-loop"
       ]
     }
   ]

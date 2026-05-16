@@ -19,6 +19,7 @@ Commands:
   clarify evaluate [--ac AC-X | --all]   3-stage eval pipeline.
   clarify evolve                         Diagnose failures; rewrite seed or fix code; retry.
   clarify ralph [flags]                  Loop evaluate→evolve until convergence or hard cap.
+  clarify goal "<goal>" [flags]          Supervised: one goal-aligned AC per iteration, user checkpoint between each.
   clarify unstuck [persona]              Reframe a stuck AC through a lateral-thinking persona.
   clarify status [--deep]                Drift report (scope cheap; intent with --deep).
   clarify help                           This message.

@@ -203,6 +203,77 @@ export const ScanSnapshotSchema = z
   .strict();
 export type ScanSnapshot = z.infer<typeof ScanSnapshotSchema>;
 
+export const GoalIterationActionSchema = z.enum([
+  'selected',
+  'implemented_passed',
+  'implemented_failed',
+  'no_aligned_ac',
+  'user_skipped',
+  'goal_changed',
+  'iteration_timeout',
+]);
+export type GoalIterationAction = z.infer<typeof GoalIterationActionSchema>;
+
+export const GoalIterationSchema = z
+  .object({
+    n: z.number().int().nonnegative(),
+    selected_ac_id: z.string().nullable().default(null),
+    alignment_score: z.number().min(0).max(1).nullable().default(null),
+    action: GoalIterationActionSchema,
+    ac_verdict: z.enum(['pass', 'fail']).nullable().default(null),
+    retried: z.boolean().default(false),
+    duration_ms: z.number().int().nonnegative(),
+    notes: z.string().default(''),
+    recorded_at: z.string().datetime({ offset: true }),
+  })
+  .strict();
+export type GoalIteration = z.infer<typeof GoalIterationSchema>;
+
+export const GoalConfigSchema = z
+  .object({
+    max_iterations: z.number().int().min(1).max(50).default(10),
+    per_iteration_timeout_ms: z.number().int().min(60_000).default(30 * 60_000),
+    total_timeout_ms: z.number().int().min(60_000).default(2 * 60 * 60_000),
+    alignment_min: z.number().min(0).max(1).default(0.5),
+  })
+  .strict();
+export type GoalConfig = z.infer<typeof GoalConfigSchema>;
+
+export const GoalStatusSchema = z.enum([
+  'running',
+  'achieved',
+  'abandoned',
+  'exhausted',
+  'no_aligned_acs',
+  'iteration_timeout',
+  'total_timeout',
+  'interrupted',
+]);
+export type GoalStatus = z.infer<typeof GoalStatusSchema>;
+
+export const GoalHistoryEntrySchema = z
+  .object({
+    statement: z.string(),
+    started_at: z.string().datetime({ offset: true }),
+    ended_at: z.string().datetime({ offset: true }).nullable().default(null),
+    reason: z.string().default(''),
+  })
+  .strict();
+export type GoalHistoryEntry = z.infer<typeof GoalHistoryEntrySchema>;
+
+export const GoalSchema = z
+  .object({
+    statement: z.string().min(1),
+    started_at: z.string().datetime({ offset: true }),
+    status: GoalStatusSchema.default('running'),
+    stop_reason: z.string().default(''),
+    iterations: z.array(GoalIterationSchema).default([]),
+    config: GoalConfigSchema,
+    history: z.array(GoalHistoryEntrySchema).default([]),
+  })
+  .strict();
+export type Goal = z.infer<typeof GoalSchema>;
+
 export const StateSchema = z
   .object({
     schema_version: z.literal(1),
@@ -234,6 +305,7 @@ export const StateSchema = z
     }),
     evolutions: z.array(EvolutionRefSchema).default([]),
     ralph: RalphSchema.optional(),
+    goal: GoalSchema.optional(),
     unstuck: z.array(UnstuckEntrySchema).default([]),
     scan: ScanSnapshotSchema.optional(),
   })
